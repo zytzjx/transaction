@@ -1,9 +1,10 @@
 ### send result to cmc server
 
 ### command line:
+```
 ./transaction -logfile=/home/qa/Desktop/chapter02.zip
 ./transaction
-
+```
 ### sample
 ```
 {
