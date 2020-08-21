@@ -1,0 +1,19 @@
+{
+    "id": 35384,
+    "ok": 1,
+    "results": [
+     {
+      "_id": "356209ef-42b5-460f-8711-2a5bbc9a3d7f",
+      "adminconsoleserver": "http://cmcqa.futuredial.com/",
+      "companyid": "1",
+      "installitunes": "False",
+      "pname": "SMART Grage",
+      "serverTime": "2019-11-22T22:20:43.295Z",
+      "staticfileserver": "http://cmcqa-dl.futuredial.com/",
+      "webserviceserver": "http://cmcqa.futuredial.com/ws/",
+      "productid": "52",
+      "siteid": "1",
+      "solutionid": "42"
+     }
+    ]
+   }
