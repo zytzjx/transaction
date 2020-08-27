@@ -5,6 +5,11 @@
 ./transaction -logfile=/home/qa/Desktop/chapter02.zip
 ./transaction
 ```
+* now support send offline data
+```
+./transaction -start-service
+```
+
 ### sample
 ```
 {

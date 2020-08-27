@@ -12,7 +12,10 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"time"
 
+	"github.com/juju/fslock"
+	cmc "github.com/zytzjx/anthenacmc/cmcserverinfo"
 	Log "github.com/zytzjx/anthenacmc/loggersys"
 	"github.com/zytzjx/anthenacmc/reportcmc"
 )
@@ -96,28 +99,90 @@ func main() {
 	Log.NewLogger("reportcmc")
 	Log.Log.Info("version:20.08.21.0; author:Jeffery zhang")
 	logfile := flag.String("logfile", "", "upload to cmc server log zip file")
+	jsonfile := flag.String("jsonfile", "", "transcation to cmc server data")
+	isserver := flag.Bool("start-service", false, "upload failed list")
 	flag.Parse()
-	// postFile("https://httpbin.org/post", "reportbase.UUID", "reportbase.Productid", *logfile)
-	reportbase, surl, err := reportcmc.ReportCMC()
-	if err != nil {
-		os.Exit(1)
+
+	var configInstall cmc.ConfigInstall //map[string]interface{}
+	if err := configInstall.LoadFile("serialconfig.json"); err != nil {
+		Log.Log.Error(err)
+		os.Exit(10)
+	}
+	staticurl := configInstall.Results[0].Staticfileserver
+	serviceserver := configInstall.Results[0].Webserviceserver
+
+	if *isserver {
+		for {
+			lock := fslock.New(".uploadlist.lock")
+			lockErr := lock.TryLock()
+			if lockErr != nil {
+				time.Sleep(2 * time.Minute)
+				continue
+			}
+			// release the lock
+			lock.Unlock()
+
+			reportcmc.SendLocalFiletoCMC(serviceserver, staticurl)
+			time.Sleep(2 * time.Minute)
+		}
+
 	}
 
-	if *logfile == "" {
-		Log.Log.Info("need not update load zip")
-		os.Exit(0)
+	lock := fslock.New(".uploadlist.lock")
+	lockErr := lock.TryLock()
+	// release the lock
+	defer lock.Unlock()
+	if lockErr != nil {
+		time.Sleep(200 * time.Microsecond)
 	}
 
-	if reportbase == nil {
-		Log.Log.Fatal("update load zip,but missing parameter")
-		os.Exit(2)
+	var uuid string
+	var productid string
+	if *jsonfile == "" {
+		// postFile("https://httpbin.org/post", "reportbase.UUID", "reportbase.Productid", *logfile)
+		reportbase, _, err := reportcmc.ReportCMC(*logfile)
+		if err != nil {
+			os.Exit(1)
+		}
+
+		if *logfile == "" {
+			Log.Log.Info("need not update load zip")
+			os.Exit(0)
+		}
+		if reportbase == nil {
+			Log.Log.Fatal("update load zip,but missing parameter")
+			os.Exit(2)
+		}
+
+		uuid = reportbase.UUID
+		productid = reportbase.Productid
+	} else {
+		jsonFile, err := os.Open(*jsonfile)
+		// if we os.Open returns an error then handle it
+		if err != nil {
+			Log.Log.Error(err)
+			os.Exit(5)
+		}
+		// defer the closing of our jsonFile so that we can parse it later on
+		defer jsonFile.Close()
+
+		byteValue, _ := ioutil.ReadAll(jsonFile)
+		var items map[string]interface{}
+		if err := json.Unmarshal(byteValue, &items); err != nil {
+			Log.Log.Error(err)
+			os.Exit(6)
+		}
+		reportcmc.Transcation(serviceserver, items)
+		uuid = fmt.Sprintf("%v", items["uuid"])
+		productid = fmt.Sprintf("%v", items["productid"])
 	}
+
 	if _, err := os.Stat(*logfile); os.IsNotExist(err) {
 		Log.Log.Fatalf("update load zip,but logfile not exist %s", *logfile)
 		os.Exit(3)
 	}
-	u, err := url.Parse(surl)
+	u, _ := url.Parse(staticurl)
 	u.Path = path.Join(u.Path, "uploadlog/")
-	postFile(u.String()+"/", reportbase.UUID, reportbase.Productid, *logfile)
+	postFile(u.String()+"/", uuid, productid, *logfile)
 	os.Exit(0)
 }
