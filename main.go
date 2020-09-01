@@ -112,6 +112,13 @@ func main() {
 	serviceserver := configInstall.Results[0].Webserviceserver
 
 	if *isserver {
+		lockSer := fslock.New(".service.lock")
+		lockErrser := lockSer.TryLock()
+		if lockErrser != nil {
+			Log.Log.Info("Service has run")
+			return
+		}
+		defer lockSer.Unlock()
 		for {
 			lock := fslock.New(".uploadlist.lock")
 			lockErr := lock.TryLock()
@@ -125,7 +132,6 @@ func main() {
 			reportcmc.SendLocalFiletoCMC(serviceserver, staticurl)
 			time.Sleep(2 * time.Minute)
 		}
-
 	}
 
 	lock := fslock.New(".uploadlist.lock")
