@@ -1,0 +1,2 @@
+time="2020-07-29T10:33:36-07:00" level=error msg="open serialconfig.json: no such file or directory"
+time="2020-07-29T10:36:11-07:00" level=info msg="{\n  \"error\": \"invalid literal for int() with base 10: ''\", \n  \"status\": 3\n}"
