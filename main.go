@@ -16,6 +16,7 @@ import (
 
 	"github.com/juju/fslock"
 	cmc "github.com/zytzjx/anthenacmc/cmcserverinfo"
+	"github.com/zytzjx/anthenacmc/datacentre"
 	Log "github.com/zytzjx/anthenacmc/loggersys"
 	"github.com/zytzjx/anthenacmc/reportcmc"
 )
@@ -108,6 +109,7 @@ func main() {
 		Log.Log.Error(err)
 		os.Exit(10)
 	}
+	datacentre.IsEmptySaveSerialConfig(configInstall)
 	staticurl := configInstall.Results[0].Staticfileserver
 	serviceserver := configInstall.Results[0].Webserviceserver
 
