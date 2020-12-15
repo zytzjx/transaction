@@ -97,7 +97,7 @@ func postFile(url, uuid, productid string, filePath string) error {
 
 func main() {
 	Log.NewLogger("reportcmc")
-	Log.Log.Info("version:20.08.21.0; author:Jeffery zhang")
+	Log.Log.Info("version:20.12.14.0; author:Jeffery zhang")
 	logfile := flag.String("logfile", "", "upload to cmc server log zip file")
 	jsonfile := flag.String("jsonfile", "", "transcation to cmc server data")
 	isserver := flag.Bool("start-service", false, "upload failed list")
